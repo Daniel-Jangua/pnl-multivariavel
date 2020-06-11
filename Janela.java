@@ -301,7 +301,10 @@ public class Janela extends JFrame{
         centerRenderer.setHorizontalAlignment( SwingConstants.CENTER );
         for(int x=1;x< numColunas+1;x++){// - num colunas
             t.getColumnModel().getColumn(x).setCellRenderer( centerRenderer );
-            t.getColumnModel().getColumn(x).setPreferredWidth(100);
+            if(varName.equals("x⁰[i]"))
+                t.getColumnModel().getColumn(x).setPreferredWidth(100);
+            else
+                t.getColumnModel().getColumn(x).setPreferredWidth(150);
         }
         DefaultTableCellRenderer colorRenderer = new DefaultTableCellRenderer();
         colorRenderer.setHorizontalAlignment( SwingConstants.CENTER );
