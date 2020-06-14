@@ -79,8 +79,78 @@ public class Metodos {
         return xk;
     }
 
-    public Vector<Double> hookeJeeves(){
-        return x0;
+    public Vector<Double> hookeJeeves() throws Exception{
+        it = 0;
+        int k = 0;
+        Vector<Double> yj;
+        Vector<Double> d;
+        Vector<Double> xk = x0;
+        Vector<Double> xk_ant;
+        double lambda = 0;
+        Vector<Vector<Double>> dj = new Vector<Vector<Double>>();
+        //montando os vetores de direção dj
+        for(int j = 0; j < n; j++){
+            Vector<Double> aux = new Vector<Double>();
+            for(int i = 0; i < n; i++){
+                if(i == j)
+                    aux.add(1.0);
+                else
+                    aux.add(0.0);
+            }
+            dj.add(aux);
+        }
+        yj = new Vector<Double>(xk);
+        while(true){
+            k++;  
+            //Passo 1
+            for(int j = 0; j < n; j++){
+                //construindo a f(yj + lambda*dj)
+                Vector<String> x_aux = new Vector<String>();
+                for(int l = 0; l < n; l++){
+                    String str = "("+yj.get(l) + "+" + "x*" + dj.get(j).get(l)+")";
+                    x_aux.add(str);
+                }
+                String ant = fx;
+                String fy = null;
+                for(int i = 1; i <= n; i++){
+                    fy = ant.replace("x"+i, x_aux.get(i-1));
+                    ant = fy;
+                }
+                //minimizando f(yj + lambda*dj)
+                lambda = BuscaReta.newton(fy, epsilon/10);
+                System.out.println("Lambda "+j+" : " + lambda);
+                //yj = yj + lambda * dj.get(j);
+                yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dj.get(j), lambda));
+            }
+            xk_ant = new Vector<Double>(xk);
+            xk = yj;
+
+            if(dist(xk, xk_ant) < epsilon)
+                break;
+            
+            //Passo 2
+            //d = xk+1 - xk
+            d = VectorOperations.somaVecs(xk, VectorOperations.multiVecEscalar(xk_ant,-1.0));
+            //construindo a f(xk+1 + lambda*d)
+            Vector<String> x_aux = new Vector<String>();
+            for(int l = 0; l < n; l++){
+                String str = "("+xk.get(l) + "+" + "x*" + d.get(l)+")";
+                x_aux.add(str);
+            }
+            String ant = fx;
+            String fy = null;
+            for(int i = 1; i <= n; i++){
+                fy = ant.replace("x"+i, x_aux.get(i-1));
+                ant = fy;
+            }
+            //minimizando f(xk+1 + lambda*d)
+            lambda = BuscaReta.newton(fy, epsilon/10);
+            System.out.println("Lambda: " + lambda);
+            //yj = yj + lambda * dj.get(j);
+            yj = VectorOperations.somaVecs(xk, VectorOperations.multiVecEscalar(d, lambda));
+        }
+        it = k;
+        return xk;
     } 
 
     public Vector<Double> gradDesc(){
