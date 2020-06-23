@@ -158,10 +158,16 @@ public class Metodos {
     }
 
     public Vector<Double> newton(){
+        try {
+            System.out.println("valor da derivada "+ Gradiente(fx, x0));
+            
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
         return x0;
     }
 
-    public Vector<Double> gradConj(){
+    public Vector<Double> gradConj(){ 
         return x0;
     }
 
@@ -173,4 +179,46 @@ public class Metodos {
         return x0;
     }
 
+    public Vector<Double> Gradiente(String f, Vector<Double> x) throws Exception{
+        double res;
+        Vector<Double> Grad = new Vector<Double>();
+        for(int i=0; i<x.size();i++){
+            res = derivadaParcial_Primeira(f, x, i);
+            Grad.add(res);
+        }
+        return Grad;
+    }
+
+    public Double derivadaParcial_Primeira(String f, Vector<Double> x, int i ) throws Exception{
+        double eps = 1e-8, xi=0,q=0,p=0,d=0;
+        double h, fx = 0, fx_ant = Double.MAX_VALUE;
+        double xplus_h = 0, xminus_h = 0; //xplus_h = f(x + h); xminus_h = f(x - h) 
+        Vector<Double> xcopia = new Vector<Double>(x);
+
+        h = 1000*eps;
+        xi = xcopia.get(0);
+        xcopia.set(0, xi+h);
+        xplus_h = Interpretador.FxRn(f, xcopia );
+
+        xcopia.set(0, xi-h);
+        xminus_h = Interpretador.FxRn(f, xcopia);
+        p = (xplus_h-xminus_h)/(2*h);
+
+        for(int k=1; k < 10; k++){
+            q = p;
+            h = h/2;
+            xcopia.set(i, xi+h);
+            xplus_h = Interpretador.FxRn(f, xcopia);
+
+            xcopia.set(i, xi-h);
+            xminus_h =  Interpretador.FxRn(f, xcopia);
+            p = (xplus_h-xminus_h)/(2*h);
+            if (Math.abs(p-q)<eps){
+                d = p;
+                break;
+            }    
+        }
+        d = p;
+        return d;
+    }
 }
