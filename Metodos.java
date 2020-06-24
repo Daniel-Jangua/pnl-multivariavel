@@ -154,6 +154,11 @@ public class Metodos {
     } 
 
     public Vector<Double> gradDesc(){
+        try {
+            System.out.println("valor da derivada segunda \n"+Hessiana(fx, x0));
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
         return x0;
     }
 
@@ -184,35 +189,54 @@ public class Metodos {
         Vector<Double> Grad = new Vector<Double>();
         for(int i=0; i<x.size();i++){
             res = derivadaParcial_Primeira(f, x, i);
+            System.out.println("\n valor var Grad \n"  + res);
             Grad.add(res);
         }
         return Grad;
     }
 
+    public Vector<Vector<Double>> Hessiana(String f, Vector<Double> x) throws Exception{
+        double res;
+        Vector<Double> vet_aux;
+        Vector<Vector<Double>> Hess = new Vector<Vector<Double>>();
+        for(int i=0; i<x.size();i++){
+                vet_aux = new Vector<Double>();
+            for(int j=0;j<x.size();j++){
+                res = derivadaParcial_Segunda(f, x, i , j);
+                System.out.println("\n valor var DP2 \n"  + res);
+                vet_aux.add(res);
+            }
+            Hess.add(vet_aux);
+        }
+        return Hess;
+    }
+
     public Double derivadaParcial_Primeira(String f, Vector<Double> x, int i ) throws Exception{
-        double eps = 1e-8, xi=0,q=0,p=0,d=0;
-        double h, fx = 0, fx_ant = Double.MAX_VALUE;
-        double xplus_h = 0, xminus_h = 0; //xplus_h = f(x + h); xminus_h = f(x - h) 
+        double eps = 1e-8; 
+        double h, xi=0, q=0, p=0, d=0;
+        double xplus_h = 0, xminus_h = 0; 
         Vector<Double> xcopia = new Vector<Double>(x);
 
         h = 1000*eps;
-        xi = xcopia.get(0);
-        xcopia.set(0, xi+h);
+        xi = xcopia.get(i);
+        xcopia.set(i, xi+h);
         xplus_h = Interpretador.FxRn(f, xcopia );
 
-        xcopia.set(0, xi-h);
+        xcopia.set(i, xi-h);
         xminus_h = Interpretador.FxRn(f, xcopia);
         p = (xplus_h-xminus_h)/(2*h);
 
         for(int k=1; k < 10; k++){
             q = p;
+           // System.out.println("\nk= " + k+"valor de q: \n" + q);
             h = h/2;
             xcopia.set(i, xi+h);
             xplus_h = Interpretador.FxRn(f, xcopia);
-
             xcopia.set(i, xi-h);
             xminus_h =  Interpretador.FxRn(f, xcopia);
             p = (xplus_h-xminus_h)/(2*h);
+           // System.out.println("\n**valor de p: \n" + p);
+            //System.out.println("\n***valor de p-q: \n"+(p-q));
             if (Math.abs(p-q)<eps){
                 d = p;
                 break;
@@ -221,4 +245,98 @@ public class Metodos {
         d = p;
         return d;
     }
+
+    public Double derivadaParcial_Segunda(String f, Vector<Double> x, int i, int j ) throws Exception{
+        double eps = 1e-5; 
+        double h, xi=0, xj=0, q=0, p=0, d=0;
+        double fx1,fx2,fx3,fx4;
+        Vector<Double> xcopia = new Vector<Double>(x);
+
+        h=1000*eps;
+        xi = xcopia.get(i);
+        xj = xcopia.get(j);
+     //   System.out.println("valor de xi \n"+ xi);
+        //System.out.println("valor de xj \n"+ xj);
+            if(i!=j){
+            //    System.out.println("\nprimeiro IF fora do FOR\n");
+                xcopia.set(i, xi+h); 
+                xcopia.set(j, xj+h);
+                fx1 = Interpretador.FxRn(f, xcopia);
+                
+                xcopia.set(j, xj - h);
+                fx2= Interpretador.FxRn(f, xcopia);
+
+                xcopia.set(i, xi - h);
+                fx4= Interpretador.FxRn(f, xcopia);
+
+                xcopia.set(j, xj + h);
+                fx3= Interpretador.FxRn(f, xcopia);
+
+                p = (fx1 - fx2 - fx3 + fx4) / (4*h*h); 
+         //       System.out.println("\n**valor de P dentro IF e for do FOR \n" + p);   
+            }
+            else{
+            //    System.out.println("\nprimeiro ELSE fora do FOR\n");
+                xcopia.set(i, xi + (2*h));
+                fx1 = Interpretador.FxRn(f, xcopia);
+           //     System.out.println("fx1 " + fx1);
+
+                xcopia.set(i, xi - (2*h));
+                fx3 = Interpretador.FxRn(f, xcopia);
+             //   System.out.println("fx3 " + fx3);
+
+                xcopia.set(i, xi);
+                fx2 = Interpretador.FxRn(f, xcopia);
+               // System.out.println("fx2 " + fx2);
+
+                p = (fx1 - (2*fx2) + fx3)/(4*h*h);
+          //      System.out.println("\n**valor de P dentro ELSE e for do FOR \n" + p); 
+            }
+        
+            for(int k=1;k<10;k++){
+                q = p;
+                h = h/2;
+
+                if(i != j){
+          //          System.out.println("\nprimeiro IF dentro do FOR\n");
+                    xcopia.set(i, xi+h); 
+                    xcopia.set(j, xj+h);
+                    fx1 = Interpretador.FxRn(f, xcopia);
+                    
+                    xcopia.set(j, xj - h);
+                    fx2= Interpretador.FxRn(f, xcopia);
+
+                    xcopia.set(i, xi - h);
+                    fx4= Interpretador.FxRn(f, xcopia);
+
+                    xcopia.set(j, xj + h);
+                    fx3= Interpretador.FxRn(f, xcopia);
+
+                    p = (fx1 - fx2 - fx3 + fx4) / (4*h*h);
+         //           System.out.println("\n**valor de P dentro IF e dentro do FOR \n" + p); 
+                }
+                else{
+              //      System.out.println("\nprimeiro ELSE dentro do FOR\n");
+                    xcopia.set(i, xi + (2*h));
+                    fx1 = Interpretador.FxRn(f, xcopia);
+    
+                    xcopia.set(i, xi - (2*h));
+                    fx3 = Interpretador.FxRn(f, xcopia);
+    
+                    xcopia.set(i, xi);
+                    fx2 = Interpretador.FxRn(f, xcopia);
+    
+                    p = (fx1 - (2*fx2) + fx3)/(4*h*h);
+           //         System.out.println("\n**valor de P dentro ELSE e dentro do FOR \n" + p);
+                }
+           //     System.out.println("k " + k+"valor de p-q \n" + Math.abs(p-q));
+                if(Math.abs(p-q) < eps){
+                    d = p;
+                    break;
+                }
+            }
+            d = p;
+            return d;
+    }
+
 }
