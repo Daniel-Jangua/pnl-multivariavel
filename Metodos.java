@@ -28,6 +28,14 @@ public class Metodos {
         return d;
     }
 
+    private double norma_gradiente(Vector<Double> vet){
+        double d = 0;
+        for(int i = 0; i < n; i++)
+            d += Math.pow(vet.get(i), 2);
+        d = Math.sqrt(d);
+        return d;
+    }
+
     public Vector<Double> coordCiclicas() throws Exception{
         it = 0;
         int k = 0;
@@ -153,13 +161,53 @@ public class Metodos {
         return xk;
     } 
 
-    public Vector<Double> gradDesc(){
-        try {
-            System.out.println("valor da derivada segunda \n"+Hessiana(fx, x0));
-        } catch (Exception e) {
-            //TODO: handle exception
-        }
-        return x0;
+    public Vector<Double> gradDesc() throws Exception{
+        it = 0;
+        int k = 0;
+        Vector<Double> yj;
+        Vector<Double> d;
+        Vector<Double> xk_ant;
+        Vector<Double> vet_grad, dk;//= new Vector<Double>();
+        Vector<Double> xk = x0;
+        double lambda = 0, CP = 0;
+
+        vet_grad = Gradiente(fx, xk);
+        CP = norma_gradiente(vet_grad);
+
+        yj = new Vector<Double>(xk);
+            while(CP >= epsilon){
+                k++;
+                dk = VectorOperations.multiVecEscalar(vet_grad, -1.0);
+                
+                for(int j = 0; j < n; j++){
+                    //construindo a f(yj + lambda*dj)
+                    Vector<String> x_aux = new Vector<String>();
+                    for(int l = 0; l < n; l++){
+                    
+                        String str = "("+yj.get(l) + "+" + "x*" + dk.get(l)+")";
+                        x_aux.add(str);
+                    }
+                    String ant = fx;
+                    String fy = null;
+                    for(int i = 1; i <= n; i++){
+                        
+                        fy = ant.replace("x"+i, x_aux.get(i-1));
+                        ant = fy;
+                    }
+                    //minimizando f(yj + lambda*dj)
+                    
+                    lambda = BuscaReta.newton(fy, epsilon/10);
+                    System.out.println("Lambda "+j+" : " + lambda);
+                    //yj = yj + lambda * dj.get(j);
+                    yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dk, lambda));
+                }
+                xk_ant = new Vector<Double>(xk);
+                xk = yj;                
+                vet_grad = Gradiente(fx, xk_ant);
+                CP = norma_gradiente(vet_grad);
+            }
+        it = k;
+        return xk;
     }
 
     public Vector<Double> newton(){
