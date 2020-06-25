@@ -214,7 +214,7 @@ public class Janela extends JFrame{
                         try{
                             xOtimo = met.fletcherReeves();
                         }catch(Exception ex){
-                            JOptionPane.showMessageDialog(isso, "Erro ao calcular o método "+cbMet.getItemAt(index)+"!","Erro!",JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(isso, "Erro ao calcular o método "+cbMet.getItemAt(index)+"!\n"+ex.toString(),"Erro!",JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                     break;

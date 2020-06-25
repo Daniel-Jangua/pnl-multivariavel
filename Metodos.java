@@ -33,6 +33,7 @@ public class Metodos {
         for(int i = 0; i < n; i++)
             d += Math.pow(vet.get(i), 2);
         d = Math.sqrt(d);
+        //System.out.println(d);
         return d;
     }
 
@@ -63,7 +64,7 @@ public class Metodos {
                 //construindo a f(yj + lambda*dj)
                 Vector<String> x_aux = new Vector<String>();
                 for(int l = 0; l < n; l++){
-                    String str = "("+yj.get(l) + "+" + "x*" + dj.get(j).get(l)+")";
+                    String str = "(("+yj.get(l) + ")+" + "x*(" + dj.get(j).get(l)+"))";
                     x_aux.add(str);
                 }
                 String ant = fx;
@@ -115,7 +116,7 @@ public class Metodos {
                 //construindo a f(yj + lambda*dj)
                 Vector<String> x_aux = new Vector<String>();
                 for(int l = 0; l < n; l++){
-                    String str = "("+yj.get(l) + "+" + "x*" + dj.get(j).get(l)+")";
+                    String str = "(("+yj.get(l) + ")+" + "x*(" + dj.get(j).get(l)+"))";
                     x_aux.add(str);
                 }
                 String ant = fx;
@@ -126,7 +127,7 @@ public class Metodos {
                 }
                 //minimizando f(yj + lambda*dj)
                 lambda = BuscaReta.newton(fy, epsilon/10);
-                System.out.println("Lambda "+j+" : " + lambda);
+                //System.out.println("Lambda "+j+" : " + lambda);
                 //yj = yj + lambda * dj.get(j);
                 yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dj.get(j), lambda));
             }
@@ -142,7 +143,7 @@ public class Metodos {
             //construindo a f(xk+1 + lambda*d)
             Vector<String> x_aux = new Vector<String>();
             for(int l = 0; l < n; l++){
-                String str = "("+xk.get(l) + "+" + "x*" + d.get(l)+")";
+                String str = "(("+xk.get(l) + ")+" + "x*(" + d.get(l)+"))";
                 x_aux.add(str);
             }
             String ant = fx;
@@ -153,7 +154,7 @@ public class Metodos {
             }
             //minimizando f(xk+1 + lambda*d)
             lambda = BuscaReta.newton(fy, epsilon/10);
-            System.out.println("Lambda: " + lambda);
+            //System.out.println("Lambda: " + lambda);
             //yj = yj + lambda * dj.get(j);
             yj = VectorOperations.somaVecs(xk, VectorOperations.multiVecEscalar(d, lambda));
         }
@@ -184,7 +185,7 @@ public class Metodos {
                     Vector<String> x_aux = new Vector<String>();
                     for(int l = 0; l < n; l++){
                     
-                        String str = "("+yj.get(l) + "+" + "x*" + dk.get(l)+")";
+                        String str = "(("+yj.get(l) + ")+" + "x*(" + dk.get(l)+"))";
                         x_aux.add(str);
                     }
                     String ant = fx;
@@ -197,7 +198,7 @@ public class Metodos {
                     //minimizando f(yj + lambda*dj)
                     
                     lambda = BuscaReta.newton(fy, epsilon/10);
-                    System.out.println("Lambda "+j+" : " + lambda);
+                    //System.out.println("Lambda "+j+" : " + lambda);
                     //yj = yj + lambda * dj.get(j);
                     yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dk, lambda));
                 }
@@ -224,8 +225,52 @@ public class Metodos {
         return x0;
     }
 
-    public Vector<Double> fletcherReeves(){
-        return x0;
+    public Vector<Double> fletcherReeves() throws Exception{
+        Vector<Double> gk;
+        Vector<Double> gk_mais1 = null;
+        Vector<Double> x = new Vector<Double>(x0);
+        Vector<Double> dk;
+        double lambda, beta;
+        gk = Gradiente(fx, x);
+        dk = VectorOperations.multiVecEscalar(gk, -1);
+        int its = 0;
+        //Passo 1
+        while(norma_gradiente(gk) >= epsilon){
+            its++;
+            //Passo 2
+            for(int k = 0; k < n; k++){
+                //Construindo f(xk+lambda*dk)
+                Vector<String> x_aux = new Vector<String>();
+                for(int l = 0; l < n; l++){
+                    String str = "(("+x.get(l) + ")+" + "x*(" + dk.get(l)+"))";
+                    x_aux.add(str);
+                }
+                String ant = fx;
+                String fy = null;
+                for(int i = 1; i <= n; i++){
+                    fy = ant.replace("x"+i, x_aux.get(i-1));
+                    ant = fy;
+                }
+                //minimizando f(xk + lambda*dk)
+                lambda = BuscaReta.newton(fy, epsilon/10);
+                //xk+1 = xk + lambda*dk
+                
+                if(norma_gradiente(dk)!=0)
+                    x = VectorOperations.somaVecs(x, VectorOperations.multiVecEscalar(dk, lambda));
+
+                gk_mais1 = Gradiente(fx, x);
+               
+                if(k < n-1){        
+                    beta = VectorOperations.multVecTxVec(gk_mais1, gk_mais1)/VectorOperations.multVecTxVec(gk, gk);
+                    dk = VectorOperations.somaVecs(VectorOperations.multiVecEscalar(gk_mais1, -1), VectorOperations.multiVecEscalar(dk, beta));
+                }
+            }
+            //Passo 3
+            gk = gk_mais1;
+            dk = VectorOperations.multiVecEscalar(gk, -1);
+        }
+        it = its;
+        return x;
     }
 
     public Vector<Double> davidonFletcherPowell(){
@@ -237,7 +282,7 @@ public class Metodos {
         Vector<Double> Grad = new Vector<Double>();
         for(int i=0; i<x.size();i++){
             res = derivadaParcial_Primeira(f, x, i);
-            System.out.println("\n valor var Grad \n"  + res);
+            //System.out.println("\n valor var Grad \n"  + res);
             Grad.add(res);
         }
         return Grad;
