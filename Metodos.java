@@ -255,7 +255,7 @@ public class Metodos {
                 lambda = BuscaReta.newton(fy, epsilon/10);
                 //xk+1 = xk + lambda*dk
                 
-                if(norma_gradiente(dk)!=0)
+                if(norma_gradiente(dk) > 1e-8)
                     x = VectorOperations.somaVecs(x, VectorOperations.multiVecEscalar(dk, lambda));
 
                 gk_mais1 = Gradiente(fx, x);
@@ -273,8 +273,71 @@ public class Metodos {
         return x;
     }
 
-    public Vector<Double> davidonFletcherPowell(){
-        return x0;
+    public Vector<Double> davidonFletcherPowell() throws Exception{
+        Vector<Vector<Double>> sk,alfa,beta;
+        Vector<Double> gk,dk,gk_mais1,qk,pk;
+        Vector<Double> x = new Vector<Double>(x0);
+        double lambda;
+
+        gk = Gradiente(fx, x);
+        int its = 0;
+        while(true){
+            its++;
+            sk = new Vector<Vector<Double>>();
+            for(int i = 0; i < n; i++){
+                Vector<Double> aux = new Vector<Double>();
+                for(int j = 0; j < n; j++){
+                    if(i == j)
+                        aux.add(1.0);
+                    else
+                        aux.add(1.0);
+                }
+                sk.add(aux);
+            }
+            for(int k = 0; k < n; k++){
+                if(norma_gradiente(gk) < epsilon){
+                    it = its;
+                    return x;
+                }
+                dk = VectorOperations.multiVecEscalar(VectorOperations.multiMatrizxVec(sk, gk), -1);
+                //System.out.println(sk);
+                //Construindo f(xk+lambda*dk)
+                Vector<String> x_aux = new Vector<String>();
+                for(int l = 0; l < n; l++){
+                    String str = "(("+x.get(l) + ")+" + "x*(" + dk.get(l)+"))";
+                    x_aux.add(str);
+                }
+                String ant = fx;
+                String fy = null;
+                for(int i = 1; i <= n; i++){
+                    fy = ant.replace("x"+i, x_aux.get(i-1));
+                    ant = fy;
+                }
+               
+                //minimizando f(xk + lambda*dk)
+                lambda = BuscaReta.newton(fy, epsilon/10);
+                if(Double.isNaN(lambda)){
+                    it = its;
+                    return x;
+                }
+                //xk+1 = xk + lambda*dk
+                x = VectorOperations.somaVecs(x, VectorOperations.multiVecEscalar(dk, lambda));
+              
+                
+                if(k < n-1){
+                    gk_mais1 = Gradiente(fx, x);
+                    qk = VectorOperations.somaVecs(gk_mais1, VectorOperations.multiVecEscalar(gk, -1));
+                    pk = VectorOperations.multiVecEscalar(dk, lambda);
+                    alfa = VectorOperations.multiMatrizEscalar(VectorOperations.multiVecxVecT(pk, pk), 1/(VectorOperations.multVecTxVec(pk, qk)));
+                    beta = VectorOperations.multiMatrizEscalar(VectorOperations.multiVecxVecT(VectorOperations.multiMatrizxVec(sk, qk), VectorOperations.multiVecTxMatriz(qk, sk)), 1/(VectorOperations.multVecTxVec(VectorOperations.multiVecTxMatriz(qk, sk), qk)));
+                    sk = VectorOperations.somaMatrizes(VectorOperations.somaMatrizes(sk, alfa),VectorOperations.multiMatrizEscalar(beta, -1));
+                    gk = gk_mais1;
+                }else{
+                    gk = Gradiente(fx, x);
+                }
+            }
+            
+        }
     }
 
     public Vector<Double> Gradiente(String f, Vector<Double> x) throws Exception{
