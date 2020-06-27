@@ -220,10 +220,73 @@ public class Metodos {
         }
         return x0;
     }
+    //====================================================================================
+    public Vector<Double> gradConj() throws Exception{
+        Vector<Double> gk, dk, xk = x0, xk_ant;
+        Vector<Double> Hxk_dk, gk_mais_Negativo;
+        Vector<Double> yj;
+        Vector<Vector<Double>> hessian;
+        double lambda, CP = 0, dkt_Hxk, gkt_dk, beta_numerador=0, beta_denominador=0, beta = 0;
+        int its = 0;
 
-    public Vector<Double> gradConj(){ 
-        return x0;
-    }
+        while(true){
+           // System.out.println("\n============================================================================");
+           // System.out.println("\nIteração: "+ its);
+            its++;
+            //passo 1:
+           //     System.out.println("Xk: "+xk);
+                gk = Gradiente(fx, xk);
+            //    System.out.println("\n Grad: "+gk);
+                hessian = Hessiana(fx, gk);
+            //    System.out.println("\nH(xk): "+hessian);
+                dk = VectorOperations.multiVecEscalar(gk, -1.0);
+            //passo 2:
+                for (int K_iteracao = 0; K_iteracao < n; K_iteracao++) {
+              //      System.out.println("\nK= "+K_iteracao);
+                    //passo A)
+                        gkt_dk = VectorOperations.multVecTxVec(gk, dk);             //v^t*v = escalar   //NUMERADOR
+                   //     System.out.println("\n gk^t * dk: "+gkt_dk);
+                        Hxk_dk = VectorOperations.multiMatrizxVec(hessian, dk);     //M*v=v             //DENOMINADOR
+                   //     System.out.println("\n H(xk) * dk: "+Hxk_dk);
+                        dkt_Hxk = VectorOperations.multVecTxVec(dk, Hxk_dk);        //v^t*v = escalar   //DENOMINADOR
+                    //    System.out.println("\n dk^t * H(xk) * dk: "+dkt_Hxk);
+                        lambda = -1.0*(gkt_dk / dkt_Hxk);
+                   //     System.out.println("lambda "+ lambda); 
+                        xk_ant = xk;
+                        xk = VectorOperations.somaVecs(xk_ant, VectorOperations.multiVecEscalar(dk, lambda));
+                   //     System.out.println("\nValor de xk "+xk+"\n");
+                    //passo B)
+                        gk = Gradiente(fx, xk);
+                   //     System.out.println("Grad " + gk+" passo B \n");
+                    //passo C)
+                        if(K_iteracao < n-1){
+                       //     System.out.println("\nxk_ant "+xk_ant + " Hessiana: "+hessian);
+                           // Hxk_dk = VectorOperations.multiMatrizxVec(hessian, dk);//M*v=v 
+                     //       System.out.println("\nBETA-> H(xk) * dk "+Hxk_dk);
+                            beta_numerador = VectorOperations.multVecTxVec(gk, Hxk_dk);   //v^t*v = escalar
+                            beta_denominador = VectorOperations.multVecTxVec(dk, Hxk_dk);       //v^t*v = escalar
+                            beta = beta_numerador / beta_denominador;
+                       //     System.out.println("\n beta: "+beta);
+                            gk_mais_Negativo = VectorOperations.multiVecEscalar(gk, -1.0);
+                            dk = (VectorOperations.somaVecs(gk_mais_Negativo, VectorOperations.multiVecEscalar(dk, beta)));
+                      //      System.out.println("\ndk+1: "+dk);
+                            if(norma_gradiente(dk) < 1e-8)
+                                break;
+                            
+                        }
+                        else
+                            break;
+                }
+            gk = Gradiente(fx, xk);
+            CP = norma_gradiente(gk);
+         //   System.out.println("\nCP: "+CP);
+            
+             if(CP <= epsilon)
+                break;
+        }
+    it = its;
+    return xk;
+}
 
     public Vector<Double> fletcherReeves() throws Exception{
         Vector<Double> gk;
@@ -359,7 +422,7 @@ public class Metodos {
                 vet_aux = new Vector<Double>();
             for(int j=0;j<x.size();j++){
                 res = derivadaParcial_Segunda(f, x, i , j);
-                System.out.println("\n valor var DP2 \n"  + res);
+                //System.out.println("\n valor var DP2 \n"  + res);
                 vet_aux.add(res);
             }
             Hess.add(vet_aux);

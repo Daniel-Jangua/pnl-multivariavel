@@ -206,6 +206,7 @@ public class Janela extends JFrame{
                         try{
                             xOtimo = met.gradConj();
                         }catch(Exception ex){
+                            System.out.println(ex.toString());
                             JOptionPane.showMessageDialog(isso, "Erro ao calcular o método "+cbMet.getItemAt(index)+"!","Erro!",JOptionPane.ERROR_MESSAGE);
                             return;
                         }
