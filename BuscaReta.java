@@ -64,7 +64,6 @@ public abstract class BuscaReta {
             err_ant = err;
             h = h/2;
         }
-      //  System.out.println("valor fora do LACO de D = " + d);
         return fx;
     }
 

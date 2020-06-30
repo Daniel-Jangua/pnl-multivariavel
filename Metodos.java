@@ -33,7 +33,6 @@ public class Metodos {
         for(int i = 0; i < n; i++)
             d += Math.pow(vet.get(i), 2);
         d = Math.sqrt(d);
-        //System.out.println(d);
         return d;
     }
 
@@ -127,7 +126,6 @@ public class Metodos {
                 }
                 //minimizando f(yj + lambda*dj)
                 lambda = BuscaReta.newton(fy, epsilon/10);
-                //System.out.println("Lambda "+j+" : " + lambda);
                 //yj = yj + lambda * dj.get(j);
                 yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dj.get(j), lambda));
             }
@@ -154,7 +152,6 @@ public class Metodos {
             }
             //minimizando f(xk+1 + lambda*d)
             lambda = BuscaReta.newton(fy, epsilon/10);
-            //System.out.println("Lambda: " + lambda);
             //yj = yj + lambda * dj.get(j);
             yj = VectorOperations.somaVecs(xk, VectorOperations.multiVecEscalar(d, lambda));
         }
@@ -198,7 +195,6 @@ public class Metodos {
                     //minimizando f(yj + lambda*dj)
                     
                     lambda = BuscaReta.newton(fy, epsilon/10);
-                    //System.out.println("Lambda "+j+" : " + lambda);
                     //yj = yj + lambda * dj.get(j);
                     yj = VectorOperations.somaVecs(yj, VectorOperations.multiVecEscalar(dk, lambda));
                 }
@@ -228,7 +224,7 @@ public class Metodos {
     	it = k;
         return xk;
     }
-    //====================================================================================
+    
     public Vector<Double> gradConj() throws Exception{
         Vector<Double> gk, dk, xk = x0, xk_ant;
         Vector<Double> Hxk_dk, gk_mais_Negativo;
@@ -238,57 +234,37 @@ public class Metodos {
         int its = 0;
 
         while(true){
-           // System.out.println("\n============================================================================");
-           // System.out.println("\nIteração: "+ its);
             its++;
             //passo 1:
-           //     System.out.println("Xk: "+xk);
                 gk = Gradiente(fx, xk);
-            //    System.out.println("\n Grad: "+gk);
                 hessian = Hessiana(fx, gk);
-            //    System.out.println("\nH(xk): "+hessian);
                 dk = VectorOperations.multiVecEscalar(gk, -1.0);
             //passo 2:
                 for (int K_iteracao = 0; K_iteracao < n; K_iteracao++) {
-              //      System.out.println("\nK= "+K_iteracao);
                     //passo A)
                         gkt_dk = VectorOperations.multVecTxVec(gk, dk);             //v^t*v = escalar   //NUMERADOR
-                   //     System.out.println("\n gk^t * dk: "+gkt_dk);
                         Hxk_dk = VectorOperations.multiMatrizxVec(hessian, dk);     //M*v=v             //DENOMINADOR
-                   //     System.out.println("\n H(xk) * dk: "+Hxk_dk);
                         dkt_Hxk = VectorOperations.multVecTxVec(dk, Hxk_dk);        //v^t*v = escalar   //DENOMINADOR
-                    //    System.out.println("\n dk^t * H(xk) * dk: "+dkt_Hxk);
                         lambda = -1.0*(gkt_dk / dkt_Hxk);
-                   //     System.out.println("lambda "+ lambda); 
                         xk_ant = xk;
                         xk = VectorOperations.somaVecs(xk_ant, VectorOperations.multiVecEscalar(dk, lambda));
-                   //     System.out.println("\nValor de xk "+xk+"\n");
                     //passo B)
                         gk = Gradiente(fx, xk);
-                   //     System.out.println("Grad " + gk+" passo B \n");
                     //passo C)
                         if(K_iteracao < n-1){
-                       //     System.out.println("\nxk_ant "+xk_ant + " Hessiana: "+hessian);
-                           // Hxk_dk = VectorOperations.multiMatrizxVec(hessian, dk);//M*v=v 
-                     //       System.out.println("\nBETA-> H(xk) * dk "+Hxk_dk);
                             beta_numerador = VectorOperations.multVecTxVec(gk, Hxk_dk);   //v^t*v = escalar
                             beta_denominador = VectorOperations.multVecTxVec(dk, Hxk_dk);       //v^t*v = escalar
                             beta = beta_numerador / beta_denominador;
-                       //     System.out.println("\n beta: "+beta);
                             gk_mais_Negativo = VectorOperations.multiVecEscalar(gk, -1.0);
                             dk = (VectorOperations.somaVecs(gk_mais_Negativo, VectorOperations.multiVecEscalar(dk, beta)));
-                      //      System.out.println("\ndk+1: "+dk);
                             if(norma_gradiente(dk) < 1e-8)
                                 break;
-                            
                         }
                         else
                             break;
                 }
             gk = Gradiente(fx, xk);
             CP = norma_gradiente(gk);
-         //   System.out.println("\nCP: "+CP);
-            
              if(CP <= epsilon)
                 break;
         }
@@ -371,7 +347,6 @@ public class Metodos {
                     return x;
                 }
                 dk = VectorOperations.multiVecEscalar(VectorOperations.multiMatrizxVec(sk, gk), -1);
-                //System.out.println(sk);
                 //Construindo f(xk+lambda*dk)
                 Vector<String> x_aux = new Vector<String>();
                 for(int l = 0; l < n; l++){
@@ -416,7 +391,6 @@ public class Metodos {
         Vector<Double> Grad = new Vector<Double>();
         for(int i=0; i<x.size();i++){
             res = derivadaParcial_Primeira(f, x, i);
-            //System.out.println("\n valor var Grad \n"  + res);
             Grad.add(res);
         }
         return Grad;
@@ -430,7 +404,6 @@ public class Metodos {
                 vet_aux = new Vector<Double>();
             for(int j=0;j<x.size();j++){
                 res = derivadaParcial_Segunda(f, x, i , j);
-                //System.out.println("\n valor var DP2 \n"  + res);
                 vet_aux.add(res);
             }
             Hess.add(vet_aux);
@@ -455,15 +428,12 @@ public class Metodos {
 
         for(int k=1; k < 10; k++){
             q = p;
-           // System.out.println("\nk= " + k+"valor de q: \n" + q);
             h = h/2;
             xcopia.set(i, xi+h);
             xplus_h = Interpretador.FxRn(f, xcopia);
             xcopia.set(i, xi-h);
             xminus_h =  Interpretador.FxRn(f, xcopia);
             p = (xplus_h-xminus_h)/(2*h);
-           // System.out.println("\n**valor de p: \n" + p);
-            //System.out.println("\n***valor de p-q: \n"+(p-q));
             if (Math.abs(p-q)<eps){
                 d = p;
                 break;
@@ -482,10 +452,7 @@ public class Metodos {
         h=1000*eps;
         xi = xcopia.get(i);
         xj = xcopia.get(j);
-     //   System.out.println("valor de xi \n"+ xi);
-        //System.out.println("valor de xj \n"+ xj);
             if(i!=j){
-            //    System.out.println("\nprimeiro IF fora do FOR\n");
                 xcopia.set(i, xi+h); 
                 xcopia.set(j, xj+h);
                 fx1 = Interpretador.FxRn(f, xcopia);
@@ -500,24 +467,18 @@ public class Metodos {
                 fx3= Interpretador.FxRn(f, xcopia);
 
                 p = (fx1 - fx2 - fx3 + fx4) / (4*h*h); 
-         //       System.out.println("\n**valor de P dentro IF e for do FOR \n" + p);   
             }
             else{
-            //    System.out.println("\nprimeiro ELSE fora do FOR\n");
                 xcopia.set(i, xi + (2*h));
                 fx1 = Interpretador.FxRn(f, xcopia);
-           //     System.out.println("fx1 " + fx1);
 
                 xcopia.set(i, xi - (2*h));
                 fx3 = Interpretador.FxRn(f, xcopia);
-             //   System.out.println("fx3 " + fx3);
 
                 xcopia.set(i, xi);
                 fx2 = Interpretador.FxRn(f, xcopia);
-               // System.out.println("fx2 " + fx2);
 
                 p = (fx1 - (2*fx2) + fx3)/(4*h*h);
-          //      System.out.println("\n**valor de P dentro ELSE e for do FOR \n" + p); 
             }
         
             for(int k=1;k<10;k++){
@@ -525,7 +486,6 @@ public class Metodos {
                 h = h/2;
 
                 if(i != j){
-          //          System.out.println("\nprimeiro IF dentro do FOR\n");
                     xcopia.set(i, xi+h); 
                     xcopia.set(j, xj+h);
                     fx1 = Interpretador.FxRn(f, xcopia);
@@ -540,10 +500,8 @@ public class Metodos {
                     fx3= Interpretador.FxRn(f, xcopia);
 
                     p = (fx1 - fx2 - fx3 + fx4) / (4*h*h);
-         //           System.out.println("\n**valor de P dentro IF e dentro do FOR \n" + p); 
                 }
                 else{
-              //      System.out.println("\nprimeiro ELSE dentro do FOR\n");
                     xcopia.set(i, xi + (2*h));
                     fx1 = Interpretador.FxRn(f, xcopia);
     
@@ -554,9 +512,7 @@ public class Metodos {
                     fx2 = Interpretador.FxRn(f, xcopia);
     
                     p = (fx1 - (2*fx2) + fx3)/(4*h*h);
-           //         System.out.println("\n**valor de P dentro ELSE e dentro do FOR \n" + p);
                 }
-           //     System.out.println("k " + k+"valor de p-q \n" + Math.abs(p-q));
                 if(Math.abs(p-q) < eps){
                     d = p;
                     break;
