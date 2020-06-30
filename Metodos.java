@@ -211,14 +211,22 @@ public class Metodos {
         return xk;
     }
 
-    public Vector<Double> newton(){
-        try {
-            System.out.println("valor da derivada "+ Gradiente(fx, x0));
-            
-        } catch (Exception e) {
-            //TODO: handle exception
-        }
-        return x0;
+    public Vector<Double> newton() throws Exception{
+    	it = 0;
+    	int k = 0;
+    	Vector<Double> xk = new Vector<Double>(x0);
+    	Vector<Double> xk_ant;
+    	do {
+    		k++;
+    		Vector<Double> gk = Gradiente(fx, xk);
+    		Vector<Vector<Double>> hes = Hessiana(fx, gk);
+    		Vector<Double> w = new Vector<Double>();
+    		w = Cholesky.resolveSistema(hes, VectorOperations.multiVecEscalar(gk, -1));
+    		xk_ant = new Vector<Double>(xk);
+    		xk = VectorOperations.somaVecs(xk_ant, w);
+    	}while(norma_gradiente(xk) >= epsilon && (dist(xk, xk_ant) >= epsilon));
+    	it = k;
+        return xk;
     }
     //====================================================================================
     public Vector<Double> gradConj() throws Exception{

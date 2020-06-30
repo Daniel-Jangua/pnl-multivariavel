@@ -1,4 +1,3 @@
-package cholesky;
 
 
 import java.util.Vector;
